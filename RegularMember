@@ -1,0 +1,28 @@
+public class RegularMember extends GymMember {
+    private String referralSource;
+
+    public RegularMember(int id, String name, String location, String phone, String email, String gender, String dob, String membershipStartDate, String referralSource) {
+        super(id, name, location, phone, email, gender, dob, membershipStartDate);
+        this.referralSource = referralSource;
+    }
+
+    public String getReferralSource() {
+        return referralSource;
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + ", Referral Source: " + referralSource;
+    }
+
+    // Revert member logic (if needed)
+    public void revertMember() {
+        // Implement specific logic for reverting a regular member
+        System.out.println("Regular Member Reverted: " + getName());
+    }
+
+    @Override
+    public void markAttendance() {
+        System.out.println("Attendance marked for Regular Member: " + getName());
+    }
+}
