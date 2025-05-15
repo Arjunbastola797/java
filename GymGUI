@@ -1,0 +1,287 @@
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.*;
+
+public class GymGUI extends JFrame implements ActionListener {
+    private JTextField idField, nameField, phoneField, emailField;
+    private JTextField trainerField, paidAmountField;
+    private JComboBox<String> planComboBox;
+    private JTextField planPriceField;
+
+    private JTextField premiumIdField, premiumNameField, premiumPhoneField;
+    private JTextField premiumTrainerField, premiumPaidField;
+
+    private JButton addRegularBtn, addPremiumBtn, saveRegularBtn, savePremiumBtn;
+    private JButton activateBtn, deactivateBtn, revertRegularBtn, revertPremiumBtn;
+    private JButton displayBtn, attendanceBtn;
+
+    private final Color primaryColor = new Color(27, 103, 190);
+    private final Color hoverColor = new Color(35, 120, 210);
+    private final Color panelColor = new Color(164, 163, 164);
+    private final Color textColor = Color.WHITE;
+    private final Font mainFont = new Font("Segoe UI", Font.PLAIN, 16);
+
+    public GymGUI() {
+        setTitle("Gym Membership System");
+        setSize(920, 640);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+
+        JLabel titleLabel = new JLabel("Gym Membership Management System", JLabel.CENTER);
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 26));
+        titleLabel.setOpaque(true);
+        titleLabel.setBackground(primaryColor);
+        titleLabel.setForeground(Color.WHITE);
+        titleLabel.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
+
+        JTabbedPane tabs = new JTabbedPane();
+        tabs.setFont(mainFont);
+        tabs.addTab("Regular Member", createRegularTab());
+        tabs.addTab("Premium Member", createPremiumTab());
+        tabs.addTab("Manage Members", createManageTab());
+        tabs.addTab("Display & Attendance", createDisplayTab());
+
+        add(titleLabel, BorderLayout.NORTH);
+        add(tabs, BorderLayout.CENTER);
+
+        setVisible(true);
+    }
+
+    private JPanel createRegularTab() {
+        JPanel panel = createStyledPanel();
+        GridBagConstraints gbc = createGBC();
+
+        idField = new JTextField();
+        nameField = new JTextField();
+        phoneField = new JTextField();
+        emailField = new JTextField();
+        trainerField = new JTextField();
+        paidAmountField = new JTextField();
+        planPriceField = new JTextField("2500");
+        planPriceField.setEditable(false);
+        planComboBox = new JComboBox<>(new String[]{"Basic", "Standard", "Deluxe"});
+
+        planComboBox.addActionListener(e -> {
+            String plan = (String) planComboBox.getSelectedItem();
+            planPriceField.setText(plan.equals("Standard") ? "3500" : plan.equals("Deluxe") ? "4500" : "2500");
+        });
+
+        addRegularBtn = createButton("Register Regular Member");
+        saveRegularBtn = createButton("Save to File");
+
+        addRegularBtn.addActionListener(this);
+        saveRegularBtn.addActionListener(e -> saveRegularMember());
+
+        String[] labels = {"Member ID", "Name", "Phone", "Email", "Trainer", "Plan", "Plan Price", "Paid Amount"};
+        JTextField[] fields = {idField, nameField, phoneField, emailField, trainerField, null, planPriceField, paidAmountField};
+
+        for (int i = 0; i < labels.length; i++) {
+            gbc.gridx = 0; gbc.gridy = i;
+            panel.add(createLabel(labels[i]), gbc);
+            gbc.gridx = 1;
+            panel.add(i == 5 ? planComboBox : fields[i], gbc);
+        }
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 10));
+        buttonPanel.setOpaque(false);
+        buttonPanel.add(addRegularBtn);
+        buttonPanel.add(saveRegularBtn);
+
+        gbc.gridx = 1; gbc.gridy = labels.length;
+        panel.add(buttonPanel, gbc);
+
+        return panel;
+    }
+
+    private JPanel createPremiumTab() {
+        JPanel panel = createStyledPanel();
+        GridBagConstraints gbc = createGBC();
+
+        premiumIdField = new JTextField();
+        premiumNameField = new JTextField();
+        premiumPhoneField = new JTextField();
+        premiumTrainerField = new JTextField();
+        premiumPaidField = new JTextField();
+
+        addPremiumBtn = createButton("Register Premium Member");
+        savePremiumBtn = createButton("Save to File");
+
+        addPremiumBtn.addActionListener(this);
+        savePremiumBtn.addActionListener(e -> savePremiumMember());
+
+        String[] labels = {"Member ID", "Name", "Phone", "Trainer", "Paid Amount"};
+        JTextField[] fields = {premiumIdField, premiumNameField, premiumPhoneField, premiumTrainerField, premiumPaidField};
+
+        for (int i = 0; i < labels.length; i++) {
+            gbc.gridx = 0; gbc.gridy = i;
+            panel.add(createLabel(labels[i]), gbc);
+            gbc.gridx = 1;
+            panel.add(fields[i], gbc);
+        }
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 10));
+        buttonPanel.setOpaque(false);
+        buttonPanel.add(addPremiumBtn);
+        buttonPanel.add(savePremiumBtn);
+
+        gbc.gridx = 1; gbc.gridy = labels.length;
+        panel.add(buttonPanel, gbc);
+
+        return panel;
+    }
+
+    private JPanel createManageTab() {
+        JPanel panel = createStyledPanel();
+        panel.setLayout(new GridLayout(4, 1, 20, 20));
+        panel.setBorder(BorderFactory.createEmptyBorder(40, 150, 40, 150));
+
+        activateBtn = createButton("Activate Member");
+        deactivateBtn = createButton("Deactivate Member");
+        revertRegularBtn = createButton("Revert Regular Member");
+        revertPremiumBtn = createButton("Revert Premium Member");
+
+        for (JButton btn : new JButton[]{activateBtn, deactivateBtn, revertRegularBtn, revertPremiumBtn}) {
+            panel.add(btn);
+            btn.addActionListener(this);
+        }
+
+        return panel;
+    }
+
+    private JPanel createDisplayTab() {
+        JPanel panel = createStyledPanel();
+        panel.setLayout(new GridLayout(2, 1, 30, 30));
+        panel.setBorder(BorderFactory.createEmptyBorder(60, 150, 60, 150));
+
+        displayBtn = createButton("Display All Members");
+        attendanceBtn = createButton("Mark Attendance");
+
+        panel.add(displayBtn);
+        panel.add(attendanceBtn);
+
+        displayBtn.addActionListener(this);
+        attendanceBtn.addActionListener(this);
+
+        return panel;
+    }
+
+    private void saveRegularMember() {
+        if (idField.getText().isEmpty() || nameField.getText().isEmpty() || phoneField.getText().isEmpty()
+                || emailField.getText().isEmpty() || trainerField.getText().isEmpty()
+                || paidAmountField.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "All fields must be filled.");
+            return;
+        }
+
+        try (PrintWriter writer = new PrintWriter(new FileWriter("RegularMembers.txt", true))) {
+            writer.printf("%s,%s,%s,%s,%s,%s,%s%n",
+                    idField.getText(), nameField.getText(), phoneField.getText(),
+                    emailField.getText(), trainerField.getText(),
+                    planComboBox.getSelectedItem(), paidAmountField.getText());
+            JOptionPane.showMessageDialog(this, "Regular member saved.");
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, "Error saving regular member.");
+        }
+    }
+
+    private void savePremiumMember() {
+        if (premiumIdField.getText().isEmpty() || premiumNameField.getText().isEmpty()
+                || premiumPhoneField.getText().isEmpty() || premiumTrainerField.getText().isEmpty()
+                || premiumPaidField.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "All fields must be filled.");
+            return;
+        }
+
+        try (PrintWriter writer = new PrintWriter(new FileWriter("PremiumMembers.txt", true))) {
+            writer.printf("%s,%s,%s,%s,%s%n",
+                    premiumIdField.getText(), premiumNameField.getText(), premiumPhoneField.getText(),
+                    premiumTrainerField.getText(), premiumPaidField.getText());
+            JOptionPane.showMessageDialog(this, "Premium member saved.");
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, "Error saving premium member.");
+        }
+    }
+
+    private void displayMembers() {
+        String[] columns = {"Type", "ID", "Name", "Phone", "Email/Trainer", "Plan", "Paid Amount"};
+        DefaultTableModel model = new DefaultTableModel(columns, 0);
+
+        try (BufferedReader reader = new BufferedReader(new FileReader("RegularMembers.txt"))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] data = line.split(",");
+                if (data.length >= 7) {
+                    model.addRow(new Object[]{"Regular", data[0], data[1], data[2], data[3], data[5], data[6]});
+                }
+            }
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, "Error reading RegularMembers.txt: " + ex.getMessage());
+        }
+
+        try (BufferedReader reader = new BufferedReader(new FileReader("PremiumMembers.txt"))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] data = line.split(",");
+                if (data.length >= 5) {
+                    model.addRow(new Object[]{"Premium", data[0], data[1], data[2], data[3], "Premium", data[4]});
+                }
+            }
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, "Error reading PremiumMembers.txt: " + ex.getMessage());
+        }
+
+        JTable table = new JTable(model);
+        table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        table.setRowHeight(30);
+        JScrollPane scrollPane = new JScrollPane(table);
+
+        JOptionPane.showMessageDialog(this, scrollPane, "All Members", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private JLabel createLabel(String text) {
+        JLabel label = new JLabel(text + ":");
+        label.setForeground(textColor);
+        label.setFont(mainFont);
+        return label;
+    }
+
+    private JButton createButton(String text) {
+        JButton button = new JButton(text);
+        button.setBackground(primaryColor);
+        button.setForeground(Color.WHITE);
+        button.setFont(mainFont);
+        button.setFocusPainted(false);
+        button.setPreferredSize(new Dimension(220, 50));
+        button.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        return button;
+    }
+
+    private JPanel createStyledPanel() {
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBackground(panelColor);
+        return panel;
+    }
+
+    private GridBagConstraints createGBC() {
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 15, 10, 15);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        return gbc;
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        JButton src = (JButton) e.getSource();
+        if (src == displayBtn) {
+            displayMembers();
+        } else {
+            JOptionPane.showMessageDialog(this, "Action: " + src.getText());
+        }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(GymGUI::new);
+    }
+}
