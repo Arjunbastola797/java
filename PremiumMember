@@ -1,0 +1,34 @@
+public class PremiumMember extends GymMember {
+
+    @Override
+    public void markAttendance() {
+        System.out.println("Attendance marked for Premium Member: " + getName());
+    }
+    private String personalTrainer;
+
+    public PremiumMember(int id, String name, String location, String phone, String email, String gender, String dob, String membershipStartDate, String personalTrainer) {
+        super(id, name, location, phone, email, gender, dob, membershipStartDate);
+        this.personalTrainer = personalTrainer;
+    }
+
+    public String getPersonalTrainer() {
+        return personalTrainer;
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + ", Personal Trainer: " + personalTrainer;
+    }
+
+    // Revert member logic (if needed)
+    public void revertMember() {
+        // Implement specific logic for reverting a premium member
+        System.out.println("Premium Member Reverted: " + getName());
+    }
+
+    // Pay due amount logic
+    public String payDueAmount(double amount) {
+        // Handle payment for premium members (can be adjusted as needed)
+        return "Payment successful for Premium Member: " + getName();
+    }
+}
